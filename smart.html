@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Internship Match — Smart Internship Recommendation Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1B2430;
+    --paper:#F7F5F0;
+    --card:#FFFFFF;
+    --amber:#E8A33D;
+    --teal:#3E7C7C;
+    --line:#DEDAD0;
+    --muted:#6B7178;
+    --danger:#C1502E;
+    --radius:6px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    line-height:1.5;
+  }
+  h1,h2,h3{
+    font-family:'Fraunces',Georgia,serif;
+    font-weight:600;
+    margin:0 0 .3em 0;
+    letter-spacing:-0.01em;
+  }
+  .app{
+    display:grid;
+    grid-template-columns:220px 1fr;
+    min-height:100vh;
+  }
+  .sidebar{
+    background:var(--ink);
+    color:#EDE9DF;
+    padding:28px 20px;
+  }
+  .sidebar h1{
+    font-size:1.25rem;
+    color:#fff;
+    margin-bottom:2px;
+  }
+  .sidebar .tag{
+    font-size:.75rem;
+    color:#9AA4B0;
+    margin-bottom:28px;
+    display:block;
+  }
+  .nav-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 12px;
+    border-radius:var(--radius);
+    cursor:pointer;
+    font-size:.92rem;
+    color:#C9CFD8;
+    margin-bottom:4px;
+    border-left:3px solid transparent;
+    transition:background .15s ease;
+  }
+  .nav-item:hover{background:rgba(255,255,255,.06);}
+  .nav-item.active{
+    background:rgba(232,163,61,.12);
+    color:#fff;
+    border-left-color:var(--amber);
+  }
+  .nav-num{
+    font-size:.7rem;
+    color:var(--muted);
+    width:16px;
+  }
+  main{
+    padding:40px 48px;
+    max-width:920px;
+  }
+  .view{display:none;}
+  .view.active{display:block;animation:fade .25s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+
+  .eyebrow{
+    color:var(--teal);
+    font-size:.8rem;
+    font-weight:600;
+    margin-bottom:6px;
+  }
+  .lede{
+    color:var(--muted);
+    font-size:.98rem;
+    max-width:60ch;
+    margin-bottom:28px;
+  }
+
+  label{
+    display:block;
+    font-size:.85rem;
+    font-weight:600;
+    margin:16px 0 6px 0;
+  }
+  input[type=text], textarea, select{
+    width:100%;
+    padding:10px 12px;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    font-family:inherit;
+    font-size:.95rem;
+    background:var(--card);
+    color:var(--ink);
+  }
+  textarea{min-height:70px;resize:vertical;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  .chip-input{
+    display:flex;flex-wrap:wrap;gap:6px;
+    padding:8px;border:1px solid var(--line);border-radius:var(--radius);
+    background:var(--card);
+  }
+  .chip{
+    background:#EEE9DC;
+    border:1px solid var(--line);
+    padding:4px 10px;
+    border-radius:16px;
+    font-size:.82rem;
+    display:flex;align-items:center;gap:6px;
+  }
+  .chip button{
+    background:none;border:none;cursor:pointer;color:var(--muted);font-size:.9rem;line-height:1;padding:0;
+  }
+  .chip-input input{
+    border:none;outline:none;flex:1;min-width:120px;padding:4px;
+  }
+
+  button.primary{
+    background:var(--ink);
+    color:#fff;
+    border:none;
+    padding:12px 22px;
+    border-radius:var(--radius);
+    font-size:.92rem;
+    font-weight:600;
+    cursor:pointer;
+    margin-top:22px;
+  }
+  button.primary:hover{background:#2b3648;}
+  button.ghost{
+    background:none;
+    border:1px solid var(--line);
+    padding:6px 14px;
+    border-radius:var(--radius);
+    font-size:.82rem;
+    cursor:pointer;
+    color:var(--ink);
+  }
+  button.ghost:hover{border-color:var(--ink);}
+
+  .match-row{
+    border-top:1px solid var(--line);
+    padding:20px 0;
+    display:grid;
+    grid-template-columns:56px 1fr auto;
+    gap:18px;
+    align-items:start;
+  }
+  .match-row:first-of-type{border-top:none;}
+  .rank{
+    font-family:'Fraunces',serif;
+    font-size:1.6rem;
+    color:var(--muted);
+  }
+  .match-title{font-size:1.05rem;font-weight:600;margin-bottom:2px;}
+  .match-meta{font-size:.82rem;color:var(--muted);margin-bottom:8px;}
+  .match-desc{font-size:.88rem;color:#454B54;margin-bottom:10px;max-width:56ch;}
+  .score-wrap{text-align:right;}
+  .score-num{font-family:'Fraunces',serif;font-size:1.4rem;color:var(--teal);}
+  .score-bar{
+    width:110px;height:5px;background:var(--line);border-radius:3px;overflow:hidden;margin-top:6px;
+  }
+  .score-bar-fill{height:100%;background:var(--teal);}
+  .why{
+    font-size:.78rem;color:var(--muted);margin-top:6px;font-style:italic;
+  }
+  .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+  .tag-pill{
+    font-size:.72rem;
+    padding:2px 8px;
+    border-radius:10px;
+    background:#EFEAE0;
+    color:#57524A;
+  }
+  .tag-pill.missing{
+    background:#F6E2DA;
+    color:var(--danger);
+  }
+
+  .empty{
+    padding:40px 0;color:var(--muted);font-size:.9rem;
+  }
+
+  .gap-card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:18px 20px;
+    margin-bottom:14px;
+  }
+  .gap-card h3{font-size:.98rem;margin-bottom:4px;}
+  .gap-card .missing-list{margin-top:10px;}
+
+  .tracker-row{
+    display:flex;justify-content:space-between;align-items:center;
+    border-top:1px solid var(--line);
+    padding:14px 0;
+  }
+  .tracker-row:first-of-type{border-top:none;}
+  select.status{
+    padding:6px 10px;font-size:.82rem;border-radius:var(--radius);border:1px solid var(--line);
+  }
+
+  .listing-card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:18px 20px;
+    margin-bottom:12px;
+  }
+  .listing-card .top{display:flex;justify-content:space-between;align-items:flex-start;}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <nav class="sidebar">
+    <h1>Internship Match</h1>
+    <span class="tag">AI-powered recommendation platform</span>
+
+    <div class="nav-item active" data-view="profile"><span class="nav-num">01</span> Student Profile</div>
+    <div class="nav-item" data-view="listings"><span class="nav-num">02</span> Internship Listings</div>
+    <div class="nav-item" data-view="matches"><span class="nav-num">03</span> AI Matching Engine</div>
+    <div class="nav-item" data-view="gap"><span class="nav-num">04</span> Skill-Gap Analysis</div>
+    <div class="nav-item" data-view="tracker"><span class="nav-num">05</span> Application Tracker</div>
+  </nav>
+
+  <main>
+
+    <!-- PROFILE -->
+    <section class="view active" id="view-profile">
+      <div class="eyebrow">Module 01</div>
+      <h2>Build your profile</h2>
+      <p class="lede">Tell us your skills, interests, and academic background. The AI Matching Engine uses this — not keyword search — to find internships that genuinely fit you.</p>
+
+      <label>Full name</label>
+      <input type="text" id="p-name" placeholder="e.g. Aisha Rahman">
+
+      <div class="row2">
+        <div>
+          <label>Branch / degree</label>
+          <input type="text" id="p-branch" placeholder="e.g. B.Tech CSE">
+        </div>
+        <div>
+          <label>Year of study</label>
+          <select id="p-year">
+            <option>1st year</option><option>2nd year</option><option>3rd year</option><option>4th year</option>
+          </select>
+        </div>
+      </div>
+
+      <label>Skills</label>
+      <div class="chip-input" id="skills-wrap">
+        <input type="text" id="skills-in" placeholder="Type a skill and press Enter (e.g. Python, Figma, SQL)">
+      </div>
+
+      <label>Interests (free text — describe in your own words)</label>
+      <textarea id="p-interests" placeholder="e.g. I like building things with data, and I'm curious about how AI products are designed"></textarea>
+
+      <label>Preferred tech domains</label>
+      <div class="chip-input" id="domains-wrap">
+        <input type="text" id="domains-in" placeholder="e.g. AI/ML, Web Dev, Data Science, Design — press Enter">
+      </div>
+
+      <button class="primary" onclick="saveProfile()">Save profile & find matches</button>
+    </section>
+
+    <!-- LISTINGS -->
+    <section class="view" id="view-listings">
+      <div class="eyebrow">Module 02</div>
+      <h2>Internship listings</h2>
+      <p class="lede">Aggregated postings the AI Matching Engine scores your profile against.</p>
+      <div id="listings-wrap"></div>
+    </section>
+
+    <!-- MATCHES -->
+    <section class="view" id="view-matches">
+      <div class="eyebrow">Module 03</div>
+      <h2>Your AI-recommended matches</h2>
+      <p class="lede">Ranked by semantic relevance — how closely your skills and interests align with each role's actual requirements, not just shared keywords.</p>
+      <div id="matches-wrap"></div>
+    </section>
+
+    <!-- SKILL GAP -->
+    <section class="view" id="view-gap">
+      <div class="eyebrow">Module 04</div>
+      <h2>Skill-gap analysis</h2>
+      <p class="lede">For your top matches, here's what stands between you and being a strong candidate.</p>
+      <div id="gap-wrap"></div>
+    </section>
+
+    <!-- TRACKER -->
+    <section class="view" id="view-tracker">
+      <div class="eyebrow">Module 05</div>
+      <h2>Application tracker</h2>
+      <p class="lede">Everything you've saved or applied to, in one place.</p>
+      <div id="tracker-wrap"></div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+/* ---------------- DATA: Internship listings (hardcoded for demo) ---------------- */
+const LISTINGS = [
+  {id:1, title:"Data Analyst Intern", company:"Northbridge Analytics", domain:"Data Science",
+   skills:["python","sql","excel","data visualization","statistics"],
+   desc:"Work with real datasets to build dashboards and uncover trends for client reports.",
+   location:"Remote", duration:"3 months", stipend:"₹12,000/mo"},
+  {id:2, title:"Frontend Developer Intern", company:"Loomstack", domain:"Web Dev",
+   skills:["javascript","react","html","css","git"],
+   desc:"Build and ship UI components for a growing SaaS product used by 10k+ users.",
+   location:"Bangalore", duration:"6 months", stipend:"₹15,000/mo"},
+  {id:3, title:"AI/ML Research Intern", company:"Verdant Labs", domain:"AI/ML",
+   skills:["python","machine learning","pytorch","numpy","research"],
+   desc:"Assist in training and evaluating models for a document-understanding product.",
+   location:"Remote", duration:"4 months", stipend:"₹18,000/mo"},
+  {id:4, title:"UI/UX Design Intern", company:"Paperplane Studio", domain:"Design",
+   skills:["figma","wireframing","user research","prototyping"],
+   desc:"Design flows and interfaces for early-stage products alongside a small founding team.",
+   location:"Muscat", duration:"3 months", stipend:"OMR 150/mo"},
+  {id:5, title:"Backend Developer Intern", company:"Kestrel Systems", domain:"Web Dev",
+   skills:["node.js","express","mongodb","api design","git"],
+   desc:"Build and maintain REST APIs powering a logistics platform.",
+   location:"Remote", duration:"6 months", stipend:"₹14,000/mo"},
+  {id:6, title:"Data Science Intern", company:"Harbor & Co", domain:"Data Science",
+   skills:["python","pandas","machine learning","sql"],
+   desc:"Support the data team in building predictive models for retail demand forecasting.",
+   location:"Kochi", duration:"3 months", stipend:"₹10,000/mo"},
+  {id:7, title:"Product Design Intern", company:"Northbridge Analytics", domain:"Design",
+   skills:["figma","design systems","user research","html","css"],
+   desc:"Own small design projects end-to-end, from research to shipped UI.",
+   location:"Remote", duration:"4 months", stipend:"₹13,000/mo"},
+  {id:8, title:"AI Product Intern", company:"Verdant Labs", domain:"AI/ML",
+   skills:["python","prompt engineering", "product thinking","communication"],
+   desc:"Bridge the gap between the ML team and product — test, document, and improve AI features.",
+   location:"Remote", duration:"3 months", stipend:"₹16,000/mo"},
+];
+
+/* ---------------- STATE ---------------- */
+let profile = JSON.parse(localStorage.getItem("im_profile") || "null") || {skills:[], domains:[]};
+let tracker = JSON.parse(localStorage.getItem("im_tracker") || "{}");
+
+/* ---------------- NAV ---------------- */
+document.querySelectorAll(".nav-item").forEach(el=>{
+  el.addEventListener("click", ()=> showView(el.dataset.view));
+});
+function showView(name){
+  document.querySelectorAll(".nav-item").forEach(n=>n.classList.toggle("active", n.dataset.view===name));
+  document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+  document.getElementById("view-"+name).classList.add("active");
+  if(name==="listings") renderListings();
+  if(name==="matches") renderMatches();
+  if(name==="gap") renderGap();
+  if(name==="tracker") renderTracker();
+}
+
+/* ---------------- CHIP INPUTS (skills / domains) ---------------- */
+function setupChipInput(inputId, wrapId, arr, key){
+  const input = document.getElementById(inputId);
+  const wrap = document.getElementById(wrapId);
+  function render(){
+    wrap.querySelectorAll(".chip").forEach(c=>c.remove());
+    arr.forEach((val,i)=>{
+      const chip = document.createElement("span");
+      chip.className="chip";
+      chip.innerHTML = `${val} <button type="button">×</button>`;
+      chip.querySelector("button").onclick = ()=>{ arr.splice(i,1); render(); };
+      wrap.insertBefore(chip, input);
+    });
+  }
+  input.addEventListener("keydown", e=>{
+    if(e.key==="Enter" && input.value.trim()){
+      e.preventDefault();
+      arr.push(input.value.trim().toLowerCase());
+      input.value="";
+      render();
+    }
+  });
+  render();
+}
+setupChipInput("skills-in","skills-wrap", profile.skills, "skills");
+setupChipInput("domains-in","domains-wrap", profile.domains, "domains");
+document.getElementById("p-name").value = profile.name || "";
+document.getElementById("p-branch").value = profile.branch || "";
+document.getElementById("p-year").value = profile.year || "1st year";
+document.getElementById("p-interests").value = profile.interests || "";
+
+function saveProfile(){
+  profile.name = document.getElementById("p-name").value;
+  profile.branch = document.getElementById("p-branch").value;
+  profile.year = document.getElementById("p-year").value;
+  profile.interests = document.getElementById("p-interests").value;
+  localStorage.setItem("im_profile", JSON.stringify(profile));
+  showView("matches");
+}
+
+/* ---------------- AI MATCHING ENGINE ----------------
+   Simplified stand-in for embedding-based semantic matching:
+   in production this step would call an LLM API to convert the
+   student profile and each listing into embeddings, then rank by
+   cosine similarity. Here we approximate "semantic closeness" with
+   a weighted overlap score across explicit skills, free-text interests,
+   and preferred domains, so the logic is transparent and explainable. */
+function scoreListing(listing){
+  const studentSkills = profile.skills || [];
+  const interestsText = (profile.interests || "").toLowerCase();
+  const domains = (profile.domains || []).map(d=>d.toLowerCase());
+
+  let score = 0;
+  let matchedSkills = [];
+  let missingSkills = [];
+
+  listing.skills.forEach(skill=>{
+    const inSkills = studentSkills.some(s => s.includes(skill) || skill.includes(s));
+    const inInterests = interestsText.includes(skill);
+    if(inSkills || inInterests){
+      score += inSkills ? 12 : 6; // direct skill match weighted higher than a loose textual mention
+      matchedSkills.push(skill);
+    } else {
+      missingSkills.push(skill);
+    }
+  });
+
+  if(domains.some(d => listing.domain.toLowerCase().includes(d) || d.includes(listing.domain.toLowerCase()))){
+    score += 20;
+  }
+
+  // light bonus for general interest-text overlap with the description
+  const descWords = listing.desc.toLowerCase().split(/\W+/);
+  const interestWords = interestsText.split(/\W+/).filter(w=>w.length>3);
+  const overlap = descWords.filter(w=>interestWords.includes(w)).length;
+  score += overlap * 3;
+
+  const maxPossible = listing.skills.length*12 + 20 + 10;
+  const pct = Math.max(2, Math.min(100, Math.round((score/maxPossible)*100)));
+
+  return {listing, pct, matchedSkills, missingSkills};
+}
+
+function getRankedMatches(){
+  return LISTINGS.map(scoreListing).sort((a,b)=>b.pct - a.pct);
+}
+
+/* ---------------- RENDER: LISTINGS ---------------- */
+function renderListings(){
+  const wrap = document.getElementById("listings-wrap");
+  wrap.innerHTML = "";
+  LISTINGS.forEach(l=>{
+    const el = document.createElement("div");
+    el.className = "listing-card";
+    el.innerHTML = `
+      <div class="top">
+        <div>
+          <div class="match-title">${l.title}</div>
+          <div class="match-meta">${l.company} · ${l.location} · ${l.duration} · ${l.stipend}</div>
+        </div>
+        <span class="tag-pill">${l.domain}</span>
+      </div>
+      <div class="match-desc">${l.desc}</div>
+      <div class="tags">${l.skills.map(s=>`<span class="tag-pill">${s}</span>`).join("")}</div>
+    `;
+    wrap.appendChild(el);
+  });
+}
+
+/* ---------------- RENDER: MATCHES ---------------- */
+function renderMatches(){
+  const wrap = document.getElementById("matches-wrap");
+  if(!profile.skills || profile.skills.length===0){
+    wrap.innerHTML = `<div class="empty">No profile yet — go to <strong>Student Profile</strong> and add your skills and interests first.</div>`;
+    return;
+  }
+  const ranked = getRankedMatches();
+  wrap.innerHTML = "";
+  ranked.forEach((m,i)=>{
+    const el = document.createElement("div");
+    el.className = "match-row";
+    el.innerHTML = `
+      <div class="rank">${String(i+1).padStart(2,"0")}</div>
+      <div>
+        <div class="match-title">${m.listing.title}</div>
+        <div class="match-meta">${m.listing.company} · ${m.listing.domain} · ${m.listing.location}</div>
+        <div class="match-desc">${m.listing.desc}</div>
+        <div class="tags">
+          ${m.matchedSkills.map(s=>`<span class="tag-pill">${s}</span>`).join("")}
+          ${m.missingSkills.map(s=>`<span class="tag-pill missing">missing: ${s}</span>`).join("")}
+        </div>
+        <div class="why">Why: overlap in ${m.matchedSkills.length || 0} skill(s)${ (profile.domains||[]).length ? ' and matching preferred domain' : ''}.</div>
+      </div>
+      <div class="score-wrap">
+        <div class="score-num">${m.pct}%</div>
+        <div class="score-bar"><div class="score-bar-fill" style="width:${m.pct}%"></div></div>
+        <button class="ghost" style="margin-top:10px" onclick="saveToTracker(${m.listing.id})">Save</button>
+      </div>
+    `;
+    wrap.appendChild(el);
+  });
+}
+
+/* ---------------- RENDER: SKILL GAP ---------------- */
+function renderGap(){
+  const wrap = document.getElementById("gap-wrap");
+  if(!profile.skills || profile.skills.length===0){
+    wrap.innerHTML = `<div class="empty">No profile yet — go to <strong>Student Profile</strong> first.</div>`;
+    return;
+  }
+  const top3 = getRankedMatches().slice(0,3);
+  wrap.innerHTML = "";
+  top3.forEach(m=>{
+    const el = document.createElement("div");
+    el.className = "gap-card";
+    const missing = m.missingSkills;
+    el.innerHTML = `
+      <h3>${m.listing.title} <span style="color:var(--muted);font-weight:400;font-size:.85rem">— ${m.pct}% match</span></h3>
+      <div style="font-size:.85rem;color:var(--muted)">${m.listing.company}</div>
+      <div class="missing-list">
+        ${ missing.length
+            ? `<div style="font-size:.85rem;margin-bottom:6px;">You're missing:</div><div class="tags">${missing.map(s=>`<span class="tag-pill missing">${s}</span>`).join("")}</div>`
+            : `<div style="font-size:.85rem;color:var(--teal);margin-top:6px;">You already meet all listed skills — strong candidate.</div>` }
+      </div>
+    `;
+    wrap.appendChild(el);
+  });
+}
+
+/* ---------------- RENDER: TRACKER ---------------- */
+function saveToTracker(id){
+  if(!tracker[id]) tracker[id] = "Saved";
+  localStorage.setItem("im_tracker", JSON.stringify(tracker));
+  showView("tracker");
+}
+function updateStatus(id, val){
+  tracker[id] = val;
+  localStorage.setItem("im_tracker", JSON.stringify(tracker));
+}
+function renderTracker(){
+  const wrap = document.getElementById("tracker-wrap");
+  const ids = Object.keys(tracker);
+  if(ids.length===0){
+    wrap.innerHTML = `<div class="empty">Nothing saved yet — save an internship from your AI matches.</div>`;
+    return;
+  }
+  wrap.innerHTML = "";
+  ids.forEach(id=>{
+    const listing = LISTINGS.find(l=>l.id===Number(id));
+    if(!listing) return;
+    const el = document.createElement("div");
+    el.className = "tracker-row";
+    el.innerHTML = `
+      <div>
+        <div class="match-title">${listing.title}</div>
+        <div class="match-meta">${listing.company} · ${listing.domain}</div>
+      </div>
+      <select class="status" onchange="updateStatus(${id}, this.value)">
+        ${["Saved","Applied","Interview","Rejected","Offer"].map(s=>`<option ${tracker[id]===s?"selected":""}>${s}</option>`).join("")}
+      </select>
+    `;
+    wrap.appendChild(el);
+  });
+}
+
+/* init */
+renderListings();
+</script>
+</body>
+</html>
